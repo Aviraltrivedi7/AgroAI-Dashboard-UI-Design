@@ -9,10 +9,12 @@ import {
   BarChart3,
   Settings,
   Wifi,
+  WifiOff,
   Leaf,
 } from 'lucide-react';
 import { sidebarItems } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -32,6 +34,7 @@ interface SidebarProps {
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const isOnline = useOnlineStatus();
 
   return (
     <aside
@@ -82,11 +85,20 @@ export function Sidebar({ className }: SidebarProps) {
         })}
       </nav>
 
-      {/* Offline Sync Indicator */}
+      {/* Offline Sync Indicator - Real navigator.onLine */}
       <div className="px-4 py-3 border-t border-white/10">
         <div className="flex items-center gap-2">
-          <Wifi className="w-4 h-4 text-lime-green" />
-          <span className="text-xs text-white/60">Online - Synced</span>
+          {isOnline ? (
+            <>
+              <Wifi className="w-4 h-4 text-lime-green" />
+              <span className="text-xs text-white/60">Online - Synced</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="w-4 h-4 text-danger-red" />
+              <span className="text-xs text-danger-red/80">Offline - Queued</span>
+            </>
+          )}
         </div>
       </div>
     </aside>

@@ -10,8 +10,11 @@ import {
   Legend,
 } from 'recharts';
 import { weeklyPerformanceData } from '@/data/mockData';
+import { useChartTheme } from '@/hooks/useChartTheme';
 
 export function WeeklyPerformanceChart() {
+  const ct = useChartTheme();
+
   return (
     <div className="bg-white dark:bg-white/5 rounded-card shadow-card border border-transparent dark:border-white/5 p-5">
       <div className="flex items-center justify-between mb-6">
@@ -23,33 +26,34 @@ export function WeeklyPerformanceChart() {
 
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={weeklyPerformanceData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(27,94,32,0.1)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={ct.gridStroke} />
           <XAxis
             dataKey="name"
-            tick={{ fontSize: 12, fill: '#8B9686' }}
-            axisLine={{ stroke: '#EDF1E8' }}
+            tick={{ fontSize: 12, fill: ct.tickFill }}
+            axisLine={{ stroke: ct.axisStroke }}
           />
           <YAxis
-            tick={{ fontSize: 12, fill: '#8B9686' }}
-            axisLine={{ stroke: '#EDF1E8' }}
+            tick={{ fontSize: 12, fill: ct.tickFill }}
+            axisLine={{ stroke: ct.axisStroke }}
             tickFormatter={(v) => `Rs.${v}L`}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#fff',
-              border: 'none',
+              backgroundColor: ct.tooltipBg,
+              color: ct.tooltipColor,
+              border: ct.tooltipBorder,
               borderRadius: '12px',
               boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
               fontSize: '13px',
             }}
           />
           <Legend
-            wrapperStyle={{ fontSize: '12px', paddingTop: '16px' }}
+            wrapperStyle={{ fontSize: '12px', paddingTop: '16px', color: ct.legendColor }}
           />
           <Bar
             dataKey="value"
             name="Visits Completed"
-            fill="rgba(27, 94, 32, 0.3)"
+            fill={ct.isDark ? 'rgba(139, 195, 74, 0.4)' : 'rgba(27, 94, 32, 0.3)'}
             radius={[4, 4, 0, 0]}
             animationDuration={800}
           />
@@ -57,7 +61,7 @@ export function WeeklyPerformanceChart() {
             type="monotone"
             dataKey="value2"
             name="Target"
-            stroke="#1B5E20"
+            stroke={ct.isDark ? '#8BC34A' : '#1B5E20'}
             strokeWidth={2}
             strokeDasharray="5 5"
             dot={false}

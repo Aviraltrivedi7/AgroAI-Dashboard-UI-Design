@@ -1,7 +1,9 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { recommendationAcceptanceData } from '@/data/mockData';
+import { useChartTheme } from '@/hooks/useChartTheme';
 
 export function RecommendationAcceptanceChart() {
+  const ct = useChartTheme();
   const data = recommendationAcceptanceData;
 
   return (
@@ -23,7 +25,7 @@ export function RecommendationAcceptanceChart() {
               <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}
           </Pie>
-          <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 12px 48px rgba(0,0,0,0.15)', fontSize: '13px' }} />
+          <Tooltip contentStyle={{ borderRadius: '12px', border: ct.tooltipBorder, backgroundColor: ct.tooltipBg, color: ct.tooltipColor, boxShadow: '0 12px 48px rgba(0,0,0,0.15)', fontSize: '13px' }} />
         </PieChart>
       </ResponsiveContainer>
       <div className="text-center -mt-4">

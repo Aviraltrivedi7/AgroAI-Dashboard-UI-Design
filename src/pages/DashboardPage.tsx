@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { DashboardGreeting } from '@/sections/dashboard/DashboardGreeting';
 import { KPICard } from '@/sections/dashboard/KPICard';
+import { MandiPriceCard } from '@/sections/dashboard/MandiPriceCard';
 import { AIRecommendationsFeed } from '@/sections/dashboard/AIRecommendationsFeed';
 import { MapWidget } from '@/sections/dashboard/MapWidget';
 import { WeeklyPerformanceChart } from '@/sections/dashboard/WeeklyPerformanceChart';
@@ -35,13 +36,29 @@ export default function DashboardPage() {
         <DashboardGreeting />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* KPI Cards — swipeable on mobile */}
+      <div className="block sm:hidden dashboard-card">
+        <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+          <div className="flex gap-4 w-max">
+            {kpiData.map((kpi) => (
+              <div key={kpi.id} className="w-[280px] flex-shrink-0">
+                <KPICard data={kpi} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="hidden sm:grid grid-cols-2 xl:grid-cols-4 gap-4">
         {kpiData.map((kpi) => (
           <div key={kpi.id} className="dashboard-card">
             <KPICard data={kpi} />
           </div>
         ))}
+      </div>
+
+      {/* Mandi Prices */}
+      <div className="dashboard-card">
+        <MandiPriceCard />
       </div>
 
       {/* Middle Section: Recommendations + Map */}

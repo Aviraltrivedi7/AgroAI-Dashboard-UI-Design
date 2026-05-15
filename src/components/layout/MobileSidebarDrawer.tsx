@@ -11,9 +11,11 @@ import {
   Settings,
   Leaf,
   Wifi,
+  WifiOff,
 } from 'lucide-react';
 import { sidebarItems } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -34,6 +36,7 @@ interface MobileSidebarDrawerProps {
 export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const isOnline = useOnlineStatus();
 
   return (
     <AnimatePresence>
@@ -100,8 +103,17 @@ export function MobileSidebarDrawer({ open, onClose }: MobileSidebarDrawerProps)
             {/* Footer */}
             <div className="px-5 py-4 border-t border-white/10">
               <div className="flex items-center gap-2">
-                <Wifi className="w-4 h-4 text-lime-green" />
-                <span className="text-xs text-white/60">Online - Synced</span>
+                {isOnline ? (
+                  <>
+                    <Wifi className="w-4 h-4 text-lime-green" />
+                    <span className="text-xs text-white/60">Online - Synced</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-4 h-4 text-danger-red" />
+                    <span className="text-xs text-danger-red/80">Offline - Queued</span>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
