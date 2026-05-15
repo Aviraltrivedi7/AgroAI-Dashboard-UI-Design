@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { RegionProvider } from '@/contexts/RegionContext';
 import LandingPage from '@/pages/LandingPage';
 import DashboardPage from '@/pages/DashboardPage';
 import VisitPlannerPage from '@/pages/VisitPlannerPage';
@@ -36,5 +37,9 @@ function AppContent() {
 }
 
 export default function App() {
-  return <AppContent />;
+  return (
+    <RegionProvider>
+      <AppContent />
+    </RegionProvider>
+  );
 }

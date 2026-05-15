@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { GoogleMap, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useRegion } from '@/contexts/RegionContext';
 
 type MapTab = 'risk' | 'visits' | 'retailers';
 
@@ -10,21 +12,12 @@ const tabs: { id: MapTab; label: string }[] = [
   { id: 'retailers', label: 'Retailers' },
 ];
 
-const center = { lat: 21.1458, lng: 79.0882 }; // Nagpur, Center of India
-
-const mapDots = [
-  { id: 1, lat: 22.1, lng: 78.5, type: 'risk' as const, label: 'Rampur' },
-  { id: 2, lat: 20.5, lng: 79.8, type: 'risk' as const, label: 'Dharnai' },
-  { id: 3, lat: 21.8, lng: 80.5, type: 'visits' as const, label: 'Sonepur' },
-  { id: 4, lat: 19.5, lng: 77.5, type: 'visits' as const, label: 'Cluster B' },
-  { id: 5, lat: 20.0, lng: 79.0, type: 'retailers' as const, label: 'R12 Store' },
-  { id: 6, lat: 22.5, lng: 77.0, type: 'retailers' as const, label: 'R08 Kendra' },
-  { id: 7, lat: 20.8, lng: 81.0, type: 'risk' as const, label: 'High Risk Zone' },
-  { id: 8, lat: 21.5, lng: 78.8, type: 'visits' as const, label: 'Priority' },
-];
+const containerStyle = {
+  width: '100%',
+  height: '100%'
+};
 
 const getMarkerIcon = (type: MapTab) => {
-  // Use simple colored circles matching the previous design
   let color = '#FF3B30'; // danger-red
   if (type === 'visits') color = '#007AFF'; // info-blue
   else if (type === 'retailers') color = '#34C759'; // lime-green
@@ -42,15 +35,25 @@ const getMarkerIcon = (type: MapTab) => {
 export function MapWidget() {
   const [activeTab, setActiveTab] = useState<MapTab>('risk');
   const [activeMarker, setActiveMarker] = useState<number | null>(null);
+  const { isLoaded } = useGoogleMaps();
+  const { activeRegion } = useRegion();
 
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBV24loDaI5LfA3rTTXDMS-fvRCxfgkqnc',
-  });
+  const mapDots = useMemo(() => [
+    { id: 1, lat: activeRegion.lat + 0.1, lng: activeRegion.lng + 0.1, type: 'risk' as const, label: 'High Risk Zone' },
+    { id: 2, lat: activeRegion.lat - 0.2, lng: activeRegion.lng - 0.3, type: 'risk' as const, label: 'Warning Area' },
+    { id: 3, lat: activeRegion.lat + 0.3, lng: activeRegion.lng - 0.2, type: 'visits' as const, label: 'Scheduled Visit' },
+    { id: 4, lat: activeRegion.lat - 0.1, lng: activeRegion.lng + 0.4, type: 'visits' as const, label: 'Pending Visit' },
+    { id: 5, lat: activeRegion.lat - 0.3, lng: activeRegion.lng + 0.1, type: 'retailers' as const, label: 'Main Retailer' },
+    { id: 6, lat: activeRegion.lat + 0.2, lng: activeRegion.lng + 0.3, type: 'retailers' as const, label: 'Sub-Dealer' },
+  ], [activeRegion]);
 
-  const filteredDots = useMemo(() => {
-    return mapDots; // Can filter by activeTab if needed, but currently shows all to match previous mock behavior
-  }, []);
+  if (!isLoaded) {
+    return (
+      <div className="bg-white dark:bg-white/5 rounded-card shadow-card border border-transparent dark:border-white/5 p-6 h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-deep-green"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-white/5 rounded-card shadow-card border border-transparent dark:border-white/5 h-full flex flex-col">
@@ -77,18 +80,17 @@ export function MapWidget() {
 
       {/* Map Area */}
       <div className="relative flex-1 min-h-[300px] bg-light-gray dark:bg-white/5 m-4 rounded-xl overflow-hidden z-0">
-        {isLoaded ? (
           <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            center={center}
-            zoom={6}
+            mapContainerStyle={containerStyle}
+            center={{ lat: activeRegion.lat, lng: activeRegion.lng }}
+            zoom={activeRegion.zoom}
             options={{
               disableDefaultUI: true,
               zoomControl: true,
               mapId: 'DEMO_MAP_ID', // Optional: for advanced styling if configured
             }}
           >
-            {filteredDots.map((dot) => (
+            {mapDots.map((dot) => (
               <MarkerF
                 key={dot.id}
                 position={{ lat: dot.lat, lng: dot.lng }}
@@ -114,11 +116,6 @@ export function MapWidget() {
               </MarkerF>
             ))}
           </GoogleMap>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-sm text-text-muted animate-pulse">Loading map...</span>
-          </div>
-        )}
 
         {/* Legend */}
         <div className="absolute bottom-3 left-3 flex items-center gap-4 px-4 py-2 rounded-full bg-white/90 dark:bg-[#1A1D18]/90 backdrop-blur-sm shadow-sm z-10">

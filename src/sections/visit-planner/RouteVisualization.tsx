@@ -1,15 +1,8 @@
 import { useState, useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
-
-const center = { lat: 21.125, lng: 79.5 };
-
-const stops = [
-  { id: 1, lat: 21.0, lng: 78.5, num: 1, name: 'Retailer R12' },
-  { id: 2, lat: 21.5, lng: 79.2, num: 2, name: 'Village A' },
-  { id: 3, lat: 20.8, lng: 79.8, num: 3, name: 'Cluster B' },
-  { id: 4, lat: 21.2, lng: 80.5, num: 4, name: 'Retailer R08' },
-];
+import { GoogleMap, MarkerF, PolylineF, InfoWindowF } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+import { useRegion } from '@/contexts/RegionContext';
 
 const polylineOptions = {
   strokeColor: '#34C759', // lime-green
@@ -17,10 +10,14 @@ const polylineOptions = {
   strokeWeight: 4,
 };
 
-const getMarkerIcon = () => {
+const getMarkerIcon = (status: 'completed' | 'in-progress' | 'pending') => {
+  let color = '#FFCC00'; // pending
+  if (status === 'completed') color = '#34C759';
+  else if (status === 'in-progress') color = '#007AFF';
+
   return {
     path: typeof window !== 'undefined' && window.google ? google.maps.SymbolPath.CIRCLE : 0,
-    fillColor: '#1B5E20', // deep-green
+    fillColor: color,
     fillOpacity: 1,
     strokeWeight: 2,
     strokeColor: '#ffffff',
@@ -28,15 +25,32 @@ const getMarkerIcon = () => {
   };
 };
 
+const containerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
 export function RouteVisualization() {
   const [activeStop, setActiveStop] = useState<number | null>(null);
+  const { isLoaded } = useGoogleMaps();
+  const { activeRegion } = useRegion();
 
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBV24loDaI5LfA3rTTXDMS-fvRCxfgkqnc',
-  });
+  const stops = useMemo(() => [
+    { id: 1, name: 'Sonepur Block', lat: activeRegion.lat + 0.1, lng: activeRegion.lng + 0.1, status: 'completed' as const, time: '09:00 AM' },
+    { id: 2, name: 'Digha Village', lat: activeRegion.lat - 0.05, lng: activeRegion.lng + 0.2, status: 'in-progress' as const, time: '11:30 AM' },
+    { id: 3, name: 'Maner Farm', lat: activeRegion.lat - 0.2, lng: activeRegion.lng + 0.05, status: 'pending' as const, time: '02:00 PM' },
+    { id: 4, name: 'Bihta Center', lat: activeRegion.lat - 0.1, lng: activeRegion.lng - 0.15, status: 'pending' as const, time: '04:30 PM' },
+  ], [activeRegion]);
 
-  const path = useMemo(() => stops.map(stop => ({ lat: stop.lat, lng: stop.lng })), []);
+  const path = useMemo(() => stops.map(stop => ({ lat: stop.lat, lng: stop.lng })), [stops]);
+
+  if (!isLoaded) {
+    return (
+      <div className="bg-white dark:bg-[#1A1D18] rounded-card shadow-card border border-light-gray dark:border-white/5 p-6 h-[400px] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-deep-green"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-white/5 rounded-card shadow-card border border-transparent dark:border-white/5 h-full flex flex-col">
@@ -48,11 +62,10 @@ export function RouteVisualization() {
 
       {/* Map */}
       <div className="relative h-[300px] bg-light-gray dark:bg-white/5 m-4 rounded-xl overflow-hidden z-0">
-        {isLoaded ? (
           <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            center={center}
-            zoom={7}
+            mapContainerStyle={containerStyle}
+            center={{ lat: activeRegion.lat, lng: activeRegion.lng }}
+            zoom={activeRegion.zoom + 1}
             options={{
               disableDefaultUI: true,
               zoomControl: true,
@@ -64,15 +77,19 @@ export function RouteVisualization() {
               <MarkerF
                 key={stop.id}
                 position={{ lat: stop.lat, lng: stop.lng }}
-                icon={getMarkerIcon()}
-                label={{ text: stop.num.toString(), color: 'white', fontSize: '10px', fontWeight: 'bold' }}
+                icon={getMarkerIcon(stop.status)}
+                label={{
+                  text: String(stop.id),
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                }}
                 onClick={() => setActiveStop(stop.id)}
               >
                 {activeStop === stop.id && (
                   <InfoWindowF
                     position={{ lat: stop.lat, lng: stop.lng }}
                     onCloseClick={() => setActiveStop(null)}
-                    options={{ pixelOffset: new window.google.maps.Size(0, -10) }}
                   >
                     <div className="text-xs font-medium text-gray-900 p-1">
                       {stop.name}
@@ -82,11 +99,6 @@ export function RouteVisualization() {
               </MarkerF>
             ))}
           </GoogleMap>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-sm text-text-muted animate-pulse">Loading route...</span>
-          </div>
-        )}
 
         {/* Recalculate Button */}
         <button className="absolute bottom-3 right-3 flex items-center gap-2 px-4 py-2 rounded-button bg-white dark:bg-[#1A1D18] shadow-dropdown text-sm font-medium text-text-primary dark:text-white hover:bg-light-gray transition-colors z-10">

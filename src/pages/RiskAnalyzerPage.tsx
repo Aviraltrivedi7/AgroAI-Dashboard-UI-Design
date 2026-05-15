@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { HeatmapGrid } from '@/sections/risk-analyzer/HeatmapGrid';
 import { NDVIPanel } from '@/sections/risk-analyzer/NDVIPanel';
 import { AIInsightsPanel } from '@/sections/risk-analyzer/AIInsightsPanel';
+import { WeatherMap } from '@/sections/risk-analyzer/WeatherMap';
+import { PestMap } from '@/sections/risk-analyzer/PestMap';
 import { cn } from '@/lib/utils';
 
 type TabId = 'heatmap' | 'ndvi' | 'weather' | 'pest';
@@ -49,19 +51,9 @@ export default function RiskAnalyzerPage() {
 
       {activeTab === 'ndvi' && <NDVIPanel />}
 
-      {activeTab === 'weather' && (
-        <div className="bg-white dark:bg-white/5 rounded-card shadow-card p-8 text-center">
-          <h3 className="text-lg font-semibold text-text-primary dark:text-white">Weather Risk Analysis</h3>
-          <p className="mt-2 text-sm text-text-muted">Detailed weather risk charts coming soon.</p>
-        </div>
-      )}
+      {activeTab === 'weather' && <WeatherMap />}
 
-      {activeTab === 'pest' && (
-        <div className="bg-white dark:bg-white/5 rounded-card shadow-card p-8 text-center">
-          <h3 className="text-lg font-semibold text-text-primary dark:text-white">Pest Outbreak Map</h3>
-          <p className="mt-2 text-sm text-text-muted">Live pest tracking map coming soon.</p>
-        </div>
-      )}
+      {activeTab === 'pest' && <PestMap />}
     </div>
   );
 }

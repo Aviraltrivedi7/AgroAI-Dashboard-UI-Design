@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Search, Bell, MapPin, ChevronDown, Sun, Moon, Leaf } from 'lucide-react';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 import { notifications } from '@/data/mockData';
+import { useRegion } from '@/contexts/RegionContext';
 
 interface TopNavbarProps {
   onMenuClick: () => void;
@@ -12,10 +13,23 @@ interface TopNavbarProps {
 
 export function TopNavbar({ onMenuClick, theme, toggleTheme }: TopNavbarProps) {
   const [notifOpen, setNotifOpen] = useState(false);
+  const [regionOpen, setRegionOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const navigate = useNavigate();
   const { isMobile } = useBreakpoint();
+  const { activeRegion, setActiveRegionId, regions } = useRegion();
+  const regionRef = useRef<HTMLDivElement>(null);
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setRegionOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0A1A0C] border-b border-light-gray dark:border-white/10 z-50 shadow-card">
@@ -67,11 +81,37 @@ export function TopNavbar({ onMenuClick, theme, toggleTheme }: TopNavbarProps) {
         {/* Right */}
         <div className="flex items-center gap-2">
           {/* Territory Selector */}
-          <button className="hidden sm:flex items-center gap-2 h-9 px-3 rounded-button bg-light-gray dark:bg-white/5 hover:bg-light-gray/80 dark:hover:bg-white/10 transition-colors">
-            <MapPin className="w-4 h-4 text-deep-green dark:text-lime-green" />
-            <span className="text-sm font-semibold text-text-primary dark:text-white">Bihar</span>
-            <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
-          </button>
+          <div className="relative hidden sm:block" ref={regionRef}>
+            <button 
+              onClick={() => setRegionOpen(!regionOpen)}
+              className="flex items-center gap-2 h-9 px-3 rounded-button bg-light-gray dark:bg-white/5 hover:bg-light-gray/80 dark:hover:bg-white/10 transition-colors"
+            >
+              <MapPin className="w-4 h-4 text-deep-green dark:text-lime-green" />
+              <span className="text-sm font-semibold text-text-primary dark:text-white">{activeRegion.name}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+            </button>
+            
+            {regionOpen && (
+              <div className="absolute top-11 right-0 w-48 bg-white dark:bg-[#1A1D18] border border-light-gray dark:border-white/10 rounded-lg shadow-dropdown overflow-hidden z-50">
+                {regions.map((region) => (
+                  <button
+                    key={region.id}
+                    onClick={() => {
+                      setActiveRegionId(region.id);
+                      setRegionOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                      activeRegion.id === region.id 
+                        ? 'bg-lime-green/10 text-deep-green dark:text-lime-green font-semibold' 
+                        : 'text-text-primary dark:text-white hover:bg-light-gray/50 dark:hover:bg-white/5'
+                    }`}
+                  >
+                    {region.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Theme Toggle */}
           <button
