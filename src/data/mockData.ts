@@ -22,7 +22,7 @@ export const sidebarItems: SidebarItem[] = [
   { id: 'retailer-insights', label: 'Retailer Insights', icon: 'Store', path: '/dashboard' },
   { id: 'farmer-profiles', label: 'Farmer Profiles', icon: 'Users', path: '/dashboard' },
   { id: 'analytics', label: 'Analytics', icon: 'BarChart3', path: '/analytics' },
-  { id: 'settings', label: 'Settings', icon: 'Settings', path: '/dashboard' },
+  { id: 'settings', label: 'Settings', icon: 'Settings', path: '/settings' },
 ];
 
 export const kpiData: KPIData[] = [

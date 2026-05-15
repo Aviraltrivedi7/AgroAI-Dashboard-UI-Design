@@ -4,14 +4,14 @@ import { Menu, Search, Bell, MapPin, ChevronDown, Sun, Moon, Leaf } from 'lucide
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 import { notifications } from '@/data/mockData';
 import { useRegion } from '@/contexts/RegionContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface TopNavbarProps {
   onMenuClick: () => void;
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
 }
 
-export function TopNavbar({ onMenuClick, theme, toggleTheme }: TopNavbarProps) {
+export function TopNavbar({ onMenuClick }: TopNavbarProps) {
+  const { theme, toggleTheme } = useTheme();
   const [notifOpen, setNotifOpen] = useState(false);
   const [regionOpen, setRegionOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);

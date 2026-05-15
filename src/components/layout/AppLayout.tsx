@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { TopNavbar } from './TopNavbar';
 import { Sidebar } from './Sidebar';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
@@ -6,23 +7,22 @@ import { AIFloatingButton } from './AIFloatingButton';
 import { AIChatDrawer } from './AIChatDrawer';
 import { useBreakpoint } from '@/hooks/useMediaQuery';
 
+import { useTheme } from '@/contexts/ThemeContext';
+
 interface AppLayoutProps {
   children: React.ReactNode;
-  theme: 'light' | 'dark';
-  toggleTheme: () => void;
 }
 
-export function AppLayout({ children, theme, toggleTheme }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const { isMobile, isDesktop } = useBreakpoint();
+  const { theme } = useTheme();
 
   return (
-    <div className="min-h-screen bg-off-white dark:bg-deep-forest transition-colors duration-300">
+    <div className={cn("min-h-screen bg-off-white dark:bg-deep-forest transition-colors duration-300", theme)}>
       <TopNavbar
         onMenuClick={() => setSidebarOpen(true)}
-        theme={theme}
-        toggleTheme={toggleTheme}
       />
 
       {isDesktop && (
